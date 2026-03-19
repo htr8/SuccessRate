@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuccessRate — Know If Your Money Will Last</title>
+<meta name="description" content="Monte Carlo retirement simulation. See the real probability your plan works across thousands of possible futures. Runs entirely in your browser. No accounts, no data collection.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --dark: #0f172a;
+  --navy: #1e3a8a;
+  --light: #f8fafc;
+  --muted: #64748b;
+  --accent: #22c55e;
+  --slate-200: #e2e8f0;
+  --card-shadow: 0 4px 24px rgba(0,0,0,.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--light); color: var(--dark); line-height: 1.6; }
+
+/* ---- NAV ---- */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.95); backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-weight: 800; font-size: 18px; color: var(--dark); text-decoration: none; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.nav-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: #60a5fa; flex-shrink: 0; }
+.nav-links { display: flex; gap: 8px; align-items: center; }
+.nav-links a { padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--muted); transition: all .15s; }
+.nav-links a:hover { color: var(--dark); background: #f1f5f9; }
+.nav-cta { background: var(--primary) !important; color: white !important; }
+.nav-cta:hover { background: var(--primary-dark) !important; }
+.nav-beta { font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; background: rgba(245,158,11,.15); color: #f59e0b; margin-left: 4px; vertical-align: middle; }
+.early-access-bar { background: linear-gradient(90deg, #1e3a8a, #2563eb); color: white; text-align: center; padding: 10px 24px; font-size: 13px; font-weight: 500; letter-spacing: .01em; }
+.early-access-bar a { color: #fbbf24; text-decoration: underline; }
+
+/* ---- HERO ---- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 15% 55%, rgba(96,165,250,.28) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(139,92,246,.20) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 90%, rgba(16,185,129,.15) 0%, transparent 45%),
+    linear-gradient(135deg, #0a0f1e 0%, #0f172a 40%, #1e3a8a 100%);
+  color: white;
+  padding: 72px 24px 72px;
+  text-align: center;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.07) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-badge { display: inline-block; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 100px; padding: 6px 16px; font-size: 13px; font-weight: 500; margin-bottom: 22px; }
+.hero h1 { font-size: clamp(34px, 5.5vw, 62px); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; max-width: 820px; margin: 0 auto 14px; }
+.hero h1 .gradient-text {
+  background: linear-gradient(90deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-tagline { font-size: clamp(18px, 2.5vw, 24px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; background: linear-gradient(90deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero p { font-size: 18px; color: rgba(255,255,255,.78); max-width: 520px; margin: 0 auto 32px; line-height: 1.65; }
+.hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary { background: white; color: var(--primary); padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px; transition: all .15s; box-shadow: 0 4px 20px rgba(0,0,0,.2); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(0,0,0,.3); }
+.btn-secondary { border: 1.5px solid rgba(255,255,255,.35); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 16px; transition: all .15s; }
+.btn-secondary:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.55); }
+
+/* ---- WHO IT'S FOR ---- */
+.who-strip { background: white; padding: 32px 24px; border-bottom: 1px solid var(--slate-200); }
+.who-inner { max-width: 1080px; margin: 0 auto; }
+.who-label { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; text-align: center; }
+.who-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.who-card { padding: 16px; border-radius: 12px; border: 1px solid #e8edf5; background: #fafbfd; }
+.who-card-title { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+.who-card-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
+@media (max-width: 760px) { .who-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .who-grid { grid-template-columns: 1fr; } }
+
+/* ---- WHY DIFFERENT ---- */
+.math-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  color: white;
+  padding: 60px 24px;
+}
+.math-inner { max-width: 1060px; margin: 0 auto; }
+.math-section .section-label { color: #a5b4fc; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+.math-section h2 { font-size: clamp(26px, 4vw, 38px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+.math-section .sub { color: rgba(255,255,255,.60); font-size: 17px; max-width: 600px; line-height: 1.6; margin-bottom: 36px; }
+.math-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.math-card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); border-radius: 16px; padding: 24px; transition: border-color .2s; }
+.math-card:hover { border-color: rgba(165,180,252,.35); }
+.math-card-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; flex-shrink: 0; }
+.math-card-icon.blue   { background: rgba(96,165,250,.18); color: #93c5fd; }
+.math-card-icon.violet { background: rgba(167,139,250,.18); color: #c4b5fd; }
+.math-card-icon.green  { background: rgba(34,197,94,.18); color: #86efac; }
+.math-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em; }
+.math-card .claim { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 10px; }
+.math-card.blue-accent   .claim { color: #93c5fd; }
+.math-card.violet-accent .claim { color: #c4b5fd; }
+.math-card.green-accent  .claim { color: #86efac; }
+.math-card p { color: rgba(255,255,255,.60); font-size: 14px; line-height: 1.65; }
+
+/* ---- FEATURES ---- */
+.features-section { padding: 60px 24px; background: var(--light); }
+.features-inner { max-width: 1060px; margin: 0 auto; }
+.section-label { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+.features-section h2 { font-size: clamp(26px, 4vw, 38px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+.features-section .sub { color: var(--muted); font-size: 17px; max-width: 560px; line-height: 1.6; margin-bottom: 36px; }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.feature-card { background: white; padding: 24px; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid #f1f5f9; transition: box-shadow .2s, border-color .2s; }
+.feature-card:hover { box-shadow: 0 12px 36px rgba(0,0,0,.1); border-color: #e2e8f0; }
+.feature-icon { width: 46px; height: 46px; background: #eff6ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; color: var(--primary); flex-shrink: 0; }
+.feature-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+.feature-card p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+/* ---- LEVERS ---- */
+.levers-section { background: white; padding: 52px 24px; border-top: 1px solid var(--slate-200); border-bottom: 1px solid var(--slate-200); }
+.levers-inner { max-width: 1060px; margin: 0 auto; }
+.levers-section h2 { font-size: clamp(22px, 3.5vw, 32px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+.levers-section .sub { color: var(--muted); font-size: 16px; margin-bottom: 28px; }
+.levers-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.lever-card { background: #f8fafd; border: 1px solid #e4ecf7; border-radius: 12px; padding: 16px 14px; }
+.lever-num { font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 6px; }
+.lever-title { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 4px; line-height: 1.3; }
+.lever-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+@media (max-width: 900px)  { .levers-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px)  { .levers-grid { grid-template-columns: 1fr 1fr; } }
+
+/* ---- PRIVACY ---- */
+.privacy-section { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); padding: 52px 24px; }
+.privacy-inner { max-width: 800px; margin: 0 auto; text-align: center; }
+.shield-icon { display: flex; justify-content: center; margin-bottom: 20px; }
+.shield-icon-inner { width: 68px; height: 68px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #059669; box-shadow: 0 4px 20px rgba(5,150,105,.18); border: 2px solid #bbf7d0; }
+.privacy-inner h2 { font-size: clamp(24px, 3.5vw, 36px); font-weight: 800; letter-spacing: -0.02em; color: #14532d; margin-bottom: 10px; }
+.privacy-sub { color: #166534; font-size: 16px; line-height: 1.6; max-width: 600px; margin: 0 auto 24px; }
+.privacy-pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.pill { background: white; border: 1px solid #bbf7d0; color: #15803d; padding: 7px 16px; border-radius: 100px; font-size: 14px; font-weight: 500; }
+
+/* ---- FINAL CTA ---- */
+.cta-section {
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(96,165,250,.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 30%, rgba(139,92,246,.15) 0%, transparent 50%),
+    linear-gradient(135deg, #0a0f1e 0%, #0f172a 40%, #1e3a8a 100%);
+  color: white;
+  padding: 80px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-section::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 30px 30px; pointer-events: none; }
+.cta-inner { position: relative; z-index: 1; }
+.cta-section h2 { font-size: clamp(28px, 4.5vw, 48px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 14px; }
+.cta-section p { font-size: 17px; color: rgba(255,255,255,.8); max-width: 480px; margin: 0 auto 36px; line-height: 1.6; }
+.btn-launch { background: white; color: var(--primary-dark); padding: 16px 34px; border-radius: 12px; text-decoration: none; font-size: 17px; font-weight: 700; display: inline-block; box-shadow: 0 8px 32px rgba(0,0,0,.25); transition: transform .15s, box-shadow .15s; letter-spacing: -0.01em; }
+.btn-launch:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+
+/* ---- FOOTER ---- */
+footer { background: var(--dark); color: rgba(255,255,255,.45); padding: 24px 24px; font-size: 13px; }
+.footer-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+.footer-copy { font-size: 13px; }
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+.footer-links a { color: rgba(255,255,255,.45); text-decoration: none; transition: color .15s; }
+.footer-links a:hover { color: white; }
+.footer-sep { color: rgba(255,255,255,.18); }
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .footer-inner { flex-direction: column; align-items: center; text-align: center; }
+  .footer-links { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-dot"></span>
+    SuccessRate <span class="nav-beta">Beta</span>
+  </a>
+  <div class="nav-links">
+    <a href="#why-different">Methodology</a>
+    <a href="#features">Features</a>
+    <a href="/app?demo=true" class="nav-cta">Try Demo</a>
+  </div>
+</nav>
+
+<div class="early-access-bar" style="margin-top:60px">
+  Currently in early access &mdash; <a href="mailto:SuccessRate.App@gmail.com?subject=Early%20Access%20Request&body=I'd%20like%20early%20access%20to%20SuccessRate.">request an invite</a> to get a license key. The demo is fully functional.
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Runs entirely in your browser &middot; No data leaves your device</div>
+    <h1>Will Your Money Last <span class="gradient-text">Your Lifetime?</span></h1>
+    <div class="hero-tagline">Know Your Odds. Improve Them.</div>
+    <p>Stop guessing about your financial future. Get your real success rate &mdash; then find out exactly what moves it.</p>
+    <div class="hero-buttons">
+      <a href="/app?demo=true" class="btn-primary">Try Free Demo</a>
+      <a href="#why-different" class="btn-secondary">See How It Works</a>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<div class="who-strip">
+  <div class="who-inner">
+    <div class="who-label">Who uses SuccessRate</div>
+    <div class="who-grid">
+      <div class="who-card">
+        <div class="who-card-title">Pre-Retirees (5&ndash;10 yrs out)</div>
+        <div class="who-card-sub">Confirm your date is realistic. See the dollar impact of 1&ndash;2 more working years.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-card-title">New Retirees</div>
+        <div class="who-card-sub">Validate spending sustainability and understand sequence-of-returns exposure.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-card-title">Mid-Retirement</div>
+        <div class="who-card-sub">Reassess after market moves. Plan Roth conversions before RMDs hit.</div>
+      </div>
+      <div class="who-card">
+        <div class="who-card-title">Legacy Planners</div>
+        <div class="who-card-sub">Balance spending with estate goals. Stress-test against worst-case markets.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY DIFFERENT -->
+<section class="math-section" id="why-different">
+  <div class="math-inner">
+    <div class="section-label">Why the Math Matters</div>
+    <h2>Most Calculators Cut Corners. This One Doesn't.</h2>
+    <p class="sub">Honesty over false precision &mdash; including the bad outcomes most tools hide from you.</p>
+    <div class="math-grid">
+
+      <div class="math-card blue-accent">
+        <div class="math-card-icon blue">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+          </svg>
+        </div>
+        <div class="claim">Fat Tails</div>
+        <h3>Crashes Happen More Than the Bell Curve Predicts</h3>
+        <p>Standard models underestimate tail risk. SuccessRate uses a Student-t distribution (df=5), so rare catastrophic market events occur with realistic frequency &mdash; not wishful statistics.</p>
+      </div>
+
+      <div class="math-card violet-accent">
+        <div class="math-card-icon violet">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+          </svg>
+        </div>
+        <div class="claim">Regime Switching</div>
+        <h3>A Major Crash Early Retirement Is Far More Damaging Than at Year 20</h3>
+        <p>Two separate market regimes &mdash; normal and stress &mdash; with Markov transitions model the real clustering of downturns. Sequence-of-returns risk is modeled, not glossed over.</p>
+      </div>
+
+      <div class="math-card green-accent">
+        <div class="math-card-icon green">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+          </svg>
+        </div>
+        <div class="claim">Tax Precision</div>
+        <h3>The Gap Between Gross and Spendable Wealth Can Exceed $200,000</h3>
+        <p>Progressive federal and state brackets, IRMAA Medicare surcharges, RMDs, and capital gains stacking &mdash; calculated year by year. Not estimated. Not averaged. Calculated.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="features-inner">
+    <div class="section-label">Features</div>
+    <h2>Not a Spreadsheet. Not a Guess.</h2>
+    <p class="sub">Professional-grade modeling that runs right in your browser.</p>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <h3>Strategy Comparison</h3>
+        <p>Side-by-side simulations with shared random seeds &mdash; every decision has a measurable impact in percentage points.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+          </svg>
+        </div>
+        <h3>Full Tax Engine</h3>
+        <p>Progressive federal + state brackets, IRMAA, RMDs, capital gains stacking. DP-optimized Roth conversions minimize lifetime taxes.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3>Social Security Timing</h3>
+        <p>Find the optimal claiming age for you and your spouse. See exactly how delay changes your odds of success.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <circle cx="12" cy="12" r="9" stroke-width="2"/>
+            <circle cx="12" cy="12" r="5" stroke-width="2"/>
+            <circle cx="12" cy="12" r="1.5" stroke-width="2" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3>Goal &amp; Legacy Tracking</h3>
+        <p>Set a spending floor and bequest target. See the probability you meet both goals across every simulated future.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- THE 5 LEVERS -->
+<section class="levers-section">
+  <div class="levers-inner">
+    <div class="section-label">Action Plan</div>
+    <h2>Five Levers That Move Your Success Rate</h2>
+    <p class="sub">Run baseline &rarr; test one change at a time &rarr; combine improvements &rarr; re-run annually.</p>
+    <div class="levers-grid">
+      <div class="lever-card">
+        <div class="lever-num">1</div>
+        <div class="lever-title">Reduce Spending Rate</div>
+        <div class="lever-desc">Single most powerful lever. Dropping from 5% to 4% improves success more than almost any investment change.</div>
+      </div>
+      <div class="lever-card">
+        <div class="lever-num">2</div>
+        <div class="lever-title">Diversify Globally</div>
+        <div class="lever-desc">At high US valuations, international stocks carry higher expected returns. Test 40/20/10/30 US/Intl/EM/Bonds.</div>
+      </div>
+      <div class="lever-card">
+        <div class="lever-num">3</div>
+        <div class="lever-title">Dynamic Spending</div>
+        <div class="lever-desc">Guardrails strategy typically adds 4&ndash;8 percentage points to success rate vs. rigid fixed withdrawal.</div>
+      </div>
+      <div class="lever-card">
+        <div class="lever-num">4</div>
+        <div class="lever-title">2-Year Cash Buffer</div>
+        <div class="lever-desc">Draw from cash during downturns. Improves the 5th percentile floor significantly.</div>
+      </div>
+      <div class="lever-card">
+        <div class="lever-num">5</div>
+        <div class="lever-title">Reduce Tax Drag</div>
+        <div class="lever-desc">Roth conversions before RMDs + optimal withdrawal ordering. Lifetime savings can exceed $150,000.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section class="privacy-section">
+  <div class="privacy-inner">
+    <div class="shield-icon">
+      <div class="shield-icon-inner">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+    </div>
+    <h2>Your Financial Data Stays With You</h2>
+    <p class="privacy-sub">The app runs entirely as WebAssembly in your browser tab. No servers, no accounts, no tracking &mdash; ever.</p>
+    <div class="privacy-pills">
+      <span class="pill">&#10003; No account required</span>
+      <span class="pill">&#10003; No email collected</span>
+      <span class="pill">&#10003; No data sent anywhere</span>
+      <span class="pill">&#10003; Works offline after load</span>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2>Know Your Odds. Improve Them.</h2>
+    <p>Stop guessing about your financial future. Get your real success rate &mdash; then find out exactly what moves it.</p>
+    <a href="/app?demo=true" class="btn-launch">Launch Free Demo &rarr;</a>
+    <p style="margin-top:16px;font-size:13px;opacity:0.7">Want the full version? <a href="mailto:SuccessRate.App@gmail.com?subject=Early%20Access%20Request&amp;body=I'd%20like%20early%20access%20to%20SuccessRate." style="color:#60a5fa;text-decoration:underline">Request early access</a></p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">&copy; 2026 SuccessRate &nbsp;&middot;&nbsp; Not financial advice. Always consult a qualified adviser.</div>
+    <div class="footer-links">
+      <a href="/methodology.html">Methodology</a>
+      <span class="footer-sep">&middot;</span>
+      <a href="/how-to-read.html">How to Read Results</a>
+      <span class="footer-sep">&middot;</span>
+      <a href="/when-to-run.html">When to Run It</a>
+      <span class="footer-sep">&middot;</span>
+      <a href="/glossary.html">Glossary</a>
+      <span class="footer-sep">&middot;</span>
+      <a href="/privacy-policy.html">Privacy Policy</a>
+    </div>
+  </div>
+</footer>
+
+
+</body>
+</html>
