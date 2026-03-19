@@ -1918,9 +1918,9 @@ select.input-field {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 20px;
-  overflow-y: auto;
-  gap: 16px;
+  padding: 0;
+  overflow: hidden;              /* don't scroll the panel — let tab body scroll */
+  min-height: 0;
 }
 
 /* ── KPI pre-tax / after-tax toggle ────────────────────────── */
