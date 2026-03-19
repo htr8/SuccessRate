@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "FinancialDashboard.Web",
   "resources": {
-    "hash": "sha256-t2swMQ1gsA0hcZH5qenklHWl5JnYloB5vuPunUcx6yE=",
+    "hash": "sha256-m1d8WJkn4J8IeykO1Z6RhaoRUCgLOn5WZuLO09IY0s0=",
     "jsModuleWorker": {
       "dotnet.native.worker.mjs": "sha256-W8oA/PZmSpflTFgoa7I1q/s/qi3oWCqq8EbUUgwYONU="
     },
@@ -154,10 +154,10 @@
       "System.wasm": "sha256-Z1FCTt1NTcZG/e9nm+UiRjge4FZJB63fiPuYlPd4wIk=",
       "mscorlib.wasm": "sha256-10pNHQ2bak6UHR63gIT+Q8k7p5ywSOdvU+cYW5HCLNM=",
       "netstandard.wasm": "sha256-r8qwqsC+u95nvajrNA2PHGSEKFn4ex1BlIQYzu2FF+4=",
-      "FinancialDashboard.Core.wasm": "sha256-hWMIUSdmQzHkLunApKyYAc1JGeOvRq7QPJHBru/1BV0=",
-      "FinancialDashboard.Shared.wasm": "sha256-eLL/UO2cIZRmXbmxtk9qXNjRZ13zFRxVpMKTtOztuLs=",
-      "MoneyShrug_Libraries.wasm": "sha256-qj+OJ1dQBmaNla43FwG/K1/9Ex/siuFweielL2v2yUc=",
-      "FinancialDashboard.Web.wasm": "sha256-QyN5HNckAtQ/wRaZxcoWWIzLG3beU1yGB9hgCD4ep+A="
+      "FinancialDashboard.Core.wasm": "sha256-bTq0xVDOqe9jkEZn02yFlJGZKiN231rA1EyLcarLHHc=",
+      "FinancialDashboard.Shared.wasm": "sha256-05diBQKrrzW4ey9oPk4uUTxhPRtCoKWI3cUxvBnoK4w=",
+      "MoneyShrug_Libraries.wasm": "sha256-utENaVE+lCPl/S/CL85hQx0R/7S6VNWb3r3DjYKzt/A=",
+      "FinancialDashboard.Web.wasm": "sha256-6BQgkzpLBUHvtn/Ya1ZlmX7eOugcQE1BOkUMILoJbjU="
     },
     "satelliteResources": {
       "cs": {

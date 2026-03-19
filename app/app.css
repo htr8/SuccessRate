@@ -9146,6 +9146,13 @@ select.login-input {
   .legal-disclaimer__full  { display: none; }
   .legal-disclaimer__full--visible { display: inline; }
 }
+.legal-disclaimer__version {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
 
 /* ============================================================
    Goal Insights Card
