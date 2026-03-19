@@ -3625,6 +3625,8 @@ button.yby-info-icon {
   overflow-x: auto;
   overflow-y: auto;
   overscroll-behavior-x: contain;
+  flex: 1;
+  min-height: 0;      /* allow flex shrink so sticky footer works */
 }
 
 .yby-scroll::-webkit-scrollbar { width: 8px; }
