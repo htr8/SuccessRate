@@ -9123,7 +9123,6 @@ select.login-input {
 
 /* ── Legal disclaimer footer ─────────────────────────────── */
 .legal-disclaimer {
-  grid-column: 1 / -1;
   text-align: center;
   font-size: 11px;
   color: var(--text-muted);
